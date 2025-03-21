@@ -13,11 +13,11 @@ export const auth = async (req: AuthRequest, res: Response, next: NextFunction) 
       throw new Error()
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret_key_here')
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key')
     req.user = decoded
     next()
   } catch (error) {
-    res.status(401).json({ message: 'Please authenticate' })
+    res.status(401).json({ error: 'Please authenticate.' })
   }
 }
 

@@ -4,6 +4,7 @@ import cors from 'cors'
 import dotenv from 'dotenv'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
+import userRoutes from './routes/userRoutes'
 
 // Load environment variables
 dotenv.config()
@@ -22,9 +23,12 @@ app.use(cors())
 app.use(express.json())
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/onlygames')
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/OnlyGames')
   .then(() => console.log('Connected to MongoDB'))
   .catch((error) => console.error('MongoDB connection error:', error))
+
+// Routes
+app.use('/api/users', userRoutes)
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
@@ -35,9 +39,10 @@ io.on('connection', (socket) => {
   })
 })
 
-// Routes
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to OnlyGames API' })
+// Error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack)
+  res.status(500).json({ error: 'Something went wrong!' })
 })
 
 // Start server

@@ -1,50 +1,159 @@
+import { dummyGamers, dummyContent } from '../data/dummyData'
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Button } from '../components/ui/button'
 import { Link } from 'react-router-dom'
 
-const Home = () => {
+export default function Home() {
   return (
     <div className="space-y-16">
       {/* Hero Section */}
-      <section className="text-center space-y-6 py-20">
-        <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
-          Connect with Pro Gamers
+      <section className="text-center space-y-6 fade-in">
+        <h1 className="text-5xl font-bold tracking-tight">
+          Welcome to <span className="text-primary">OnlyGames</span>
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Learn from the best, watch exclusive content, and get personalized gaming sessions with your favorite creators.
+          Connect with gamers, share your passion, and grow your gaming community.
         </p>
-        <div className="flex gap-4 justify-center">
+        <div className="flex justify-center gap-4">
           <Link to="/explore">
-            <Button size="lg" type="button">Explore Creators</Button>
+            <Button size="lg" className="glow">
+              Explore Creators
+            </Button>
           </Link>
           <Link to="/register">
-            <Button variant="outline" size="lg" type="button">Become a Creator</Button>
+            <Button size="lg" variant="outline" className="float">
+              Become a Creator
+            </Button>
           </Link>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="p-6 border rounded-lg">
-          <h3 className="text-xl font-semibold mb-2">Premium Content</h3>
-          <p className="text-muted-foreground">
-            Access exclusive gaming tutorials, tips, and strategies from professional players.
-          </p>
+      <section className="grid md:grid-cols-3 gap-6">
+        <Card className="slide-in" style={{ animationDelay: '0.2s' }}>
+          <CardHeader>
+            <CardTitle>Connect with Gamers</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Find and connect with gamers who share your interests and gaming style.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="slide-in" style={{ animationDelay: '0.4s' }}>
+          <CardHeader>
+            <CardTitle>Share Your Content</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Upload and share your gaming highlights, tutorials, and live streams.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="slide-in" style={{ animationDelay: '0.6s' }}>
+          <CardHeader>
+            <CardTitle>Grow Your Community</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground">
+              Build your fanbase and monetize your gaming content through subscriptions.
+            </p>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* CTA Section */}
+      <section className="text-center space-y-6 fade-in">
+        <h2 className="text-3xl font-bold">Ready to Start Your Gaming Journey?</h2>
+        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          Join thousands of gamers who are already sharing their passion on OnlyGames.
+        </p>
+        <Link to="/register">
+          <Button size="lg" className="glow">
+            Get Started Now
+          </Button>
+        </Link>
+      </section>
+
+      {/* Featured Creators */}
+      <section>
+        <h2 className="text-2xl font-bold mb-6">Featured Creators</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {dummyGamers.map((gamer) => (
+            <Card key={gamer.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+              <CardHeader className="pb-2">
+                <div className="flex items-center gap-4">
+                  <img
+                    src={gamer.avatar}
+                    alt={gamer.name}
+                    className="w-16 h-16 rounded-full"
+                  />
+                  <div>
+                    <CardTitle className="text-xl">{gamer.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground">@{gamer.username}</p>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">{gamer.bio}</p>
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {gamer.games.map((game) => (
+                    <span
+                      key={game}
+                      className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full"
+                    >
+                      {game}
+                    </span>
+                  ))}
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>{gamer.followers.toLocaleString()} followers</span>
+                  <span>⭐ {gamer.rating}</span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
-        <div className="p-6 border rounded-lg">
-          <h3 className="text-xl font-semibold mb-2">1-on-1 Sessions</h3>
-          <p className="text-muted-foreground">
-            Book personalized gaming sessions with your favorite creators for direct coaching.
-          </p>
-        </div>
-        <div className="p-6 border rounded-lg">
-          <h3 className="text-xl font-semibold mb-2">Community</h3>
-          <p className="text-muted-foreground">
-            Join a thriving community of gamers and creators, share experiences, and grow together.
-          </p>
+      </section>
+
+      {/* Latest Content */}
+      <section>
+        <h2 className="text-2xl font-bold mb-6">Latest Content</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {dummyContent.map((content) => {
+            const creator = dummyGamers.find(g => g.id === content.creatorId)
+            return (
+              <Card key={content.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <img
+                  src={content.thumbnail}
+                  alt={content.title}
+                  className="w-full h-48 object-cover"
+                />
+                <CardContent className="p-4">
+                  <h3 className="font-semibold mb-2">{content.title}</h3>
+                  <p className="text-sm text-muted-foreground mb-4">{content.description}</p>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <img
+                        src={creator?.avatar}
+                        alt={creator?.name}
+                        className="w-6 h-6 rounded-full"
+                      />
+                      <span>{creator?.name}</span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span>👁️ {content.views}</span>
+                      <span>❤️ {content.likes}</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       </section>
     </div>
   )
-}
-
-export default Home 
+} 
