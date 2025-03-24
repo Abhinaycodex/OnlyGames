@@ -1,6 +1,30 @@
 import mongoose from 'mongoose'
 import bcrypt from 'bcryptjs'
 
+export interface IUser extends mongoose.Document {
+  username: string
+  email: string
+  password: string
+  isCreator: boolean
+  profilePicture: string
+  bio: string
+  games: string[]
+  subscriptionPrice: number
+  subscribers: mongoose.Types.ObjectId[]
+  createdAt: Date
+  // Creator specific fields
+  creatorProfile?: {
+    contentCount: number
+    totalRevenue: number
+    subscriberCount: number
+    contentCategories: string[]
+    featured: boolean
+    verificationStatus: 'pending' | 'verified' | 'rejected'
+  }
+  // Methods
+  comparePassword(candidatePassword: string): Promise<boolean>
+}
+
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -49,6 +73,34 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  // Creator specific profile information
+  creatorProfile: {
+    type: {
+      contentCount: {
+        type: Number,
+        default: 0
+      },
+      totalRevenue: {
+        type: Number,
+        default: 0
+      },
+      subscriberCount: {
+        type: Number,
+        default: 0
+      },
+      contentCategories: [String],
+      featured: {
+        type: Boolean,
+        default: false
+      },
+      verificationStatus: {
+        type: String,
+        enum: ['pending', 'verified', 'rejected'],
+        default: 'pending'
+      }
+    },
+    default: null
   }
 })
 
@@ -65,11 +117,26 @@ userSchema.pre('save', async function(next) {
   }
 })
 
+// Initialize creator profile when a user becomes a creator
+userSchema.pre('save', async function(this: IUser, next) {
+  if (this.isModified('isCreator') && this.isCreator && !this.creatorProfile) {
+    this.creatorProfile = {
+      contentCount: 0,
+      totalRevenue: 0,
+      subscriberCount: 0,
+      contentCategories: [],
+      featured: false,
+      verificationStatus: 'pending'
+    };
+  }
+  next();
+});
+
 // Method to compare password
 userSchema.methods.comparePassword = async function(candidatePassword: string) {
   return bcrypt.compare(candidatePassword, this.password)
 }
 
-const User = mongoose.model('User', userSchema)
+const User = mongoose.model<IUser>('User', userSchema)
 
 export default User 

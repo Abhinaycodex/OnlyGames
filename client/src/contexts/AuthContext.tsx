@@ -1,18 +1,28 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { GamerProfile } from '../data/dummyData';
 
+// Define a user type that works with our API
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  isCreator: boolean;
+  // Add any other fields returned by your API
+}
+
 interface AuthContextType {
-  user: GamerProfile | null;
+  user: GamerProfile | User | null;
   loading: boolean;
   login: (provider: 'google' | 'facebook') => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
+  setUser: (user: User) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<GamerProfile | null>(null);
+  const [user, setUser] = useState<GamerProfile | User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -54,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   return (
@@ -62,7 +73,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       login,
       logout,
-      isAuthenticated: !!user
+      isAuthenticated: !!user,
+      setUser
     }}>
       {children}
     </AuthContext.Provider>

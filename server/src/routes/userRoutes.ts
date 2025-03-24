@@ -1,6 +1,7 @@
 import express from 'express'
 import jwt from 'jsonwebtoken'
-import User from '../models/User'
+import { Document, Types } from 'mongoose'
+import User, { IUser } from '../models/User'
 import { auth } from '../middleware/auth'
 
 const router = express.Router()
@@ -8,11 +9,13 @@ const router = express.Router()
 // Register new user
 router.post('/register', async (req, res) => {
   try {
+    console.log('Registration request received:', req.body)
     const { username, email, password, isCreator } = req.body
 
     // Check if user already exists
     const existingUser = await User.findOne({ $or: [{ email }, { username }] })
     if (existingUser) {
+      console.log('User already exists:', { email, username })
       return res.status(400).json({ error: 'User already exists' })
     }
 
@@ -24,7 +27,9 @@ router.post('/register', async (req, res) => {
       isCreator: isCreator || false
     })
 
+    console.log('Attempting to save user:', { username, email, isCreator })
     await user.save()
+    console.log('User saved successfully:', user._id)
 
     // Generate JWT token
     const token = jwt.sign(
@@ -42,8 +47,13 @@ router.post('/register', async (req, res) => {
         isCreator: user.isCreator
       }
     })
-  } catch (error) {
-    res.status(400).json({ error: 'Error creating user' })
+  } catch (error: unknown) {
+    console.error('Error in registration:', error)
+    if (error instanceof Error) {
+      res.status(400).json({ error: 'Error creating user', details: error.message })
+    } else {
+      res.status(400).json({ error: 'Error creating user' })
+    }
   }
 })
 
@@ -59,7 +69,7 @@ router.post('/login', async (req, res) => {
     }
 
     // Check password
-    const isMatch = await user.comparePassword(password)
+    const isMatch = await (user as IUser).comparePassword(password)
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid credentials' })
     }
@@ -109,13 +119,15 @@ router.patch('/profile', auth, async (req: any, res) => {
   }
 
   try {
-    const user = await User.findById(req.user.userId)
+    const user = await User.findById(req.user.userId) as IUser | null
     if (!user) {
       return res.status(404).json({ error: 'User not found' })
     }
 
     updates.forEach(update => {
-      user[update] = req.body[update]
+      if (allowedUpdates.includes(update)) {
+        (user as any)[update] = req.body[update]
+      }
     })
 
     await user.save()
@@ -138,6 +150,10 @@ router.post('/subscribe/:creatorId', auth, async (req: any, res) => {
     }
 
     const user = await User.findById(req.user.userId)
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
     if (user.subscribers.includes(creator._id)) {
       return res.status(400).json({ error: 'Already subscribed' })
     }

@@ -11,6 +11,7 @@ import Profile from './pages/Profile'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
+import { Toaster } from './components/Toaster'
 
 const queryClient = new QueryClient()
 
@@ -35,6 +36,7 @@ function App() {
               </main>
               <Footer />
             </div>
+            <Toaster />
           </Router>
         </AuthProvider>
       </ThemeProvider>

@@ -1,12 +1,95 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Input } from '../components/ui/input';
-import { Label } from '../components/ui/label';
-import { Checkbox } from '../components/ui/checkbox';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
+import { Button } from '../components/ui/button'
+import { Input } from '../components/ui/input'
+import { Label } from '../components/ui/label'
+import { Checkbox } from '../components/ui/checkbox'
+import { register } from '../lib/api'
+import { useToast } from '../components/ui/use-toast'
 
 const Register = () => {
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    isCreator: false
+  })
+  const [loading, setLoading] = useState(false)
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { id, value, type, checked } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [id]: type === 'checkbox' ? checked : value
+    }))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Error",
+        description: "Passwords do not match",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      setLoading(true)
+      console.log("Attempting registration with:", {
+        username: formData.username,
+        email: formData.email,
+        isCreator: formData.isCreator,
+      })
+      
+      const response = await register({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        isCreator: formData.isCreator
+      })
+
+      // Success - token is already stored by the register function
+      toast({
+        title: "Success",
+        description: "Account created successfully"
+      })
+      navigate('/dashboard')
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      
+      let errorMessage = "Registration failed";
+      
+      // Handle specific error messages
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      // Check if it's a CORS error
+      if (error.name === 'NetworkError' || 
+          (typeof error.message === 'string' && 
+           (error.message.includes('Network Error') || 
+            error.message.includes('CORS')))) {
+        errorMessage = "Network error - the server may be down or CORS is not enabled";
+        console.error("CORS or network error detected");
+      }
+      
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive"
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center">
       <Card className="w-full max-w-md">
@@ -16,30 +99,63 @@ const Register = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input id="name" placeholder="John Doe" />
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="johndoe"
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="john@example.com" />
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="john@example.com"
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" />
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <Input id="confirmPassword" type="password" />
+              <Input
+                id="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
             </div>
             <div className="flex items-center space-x-2">
-              <Checkbox id="creator" />
-              <Label htmlFor="creator" className="text-sm">
+              <Checkbox
+                id="isCreator"
+                checked={formData.isCreator}
+                onCheckedChange={(checked) => 
+                  setFormData(prev => ({ ...prev, isCreator: checked === true }))
+                }
+              />
+              <Label htmlFor="isCreator" className="text-sm">
                 I want to become a creator
               </Label>
             </div>
-            <Button className="w-full">Sign Up</Button>
+            <Button className="w-full" type="submit" disabled={loading}>
+              {loading ? 'Creating Account...' : 'Sign Up'}
+            </Button>
           </form>
 
           <div className="relative my-6">
@@ -95,7 +211,7 @@ const Register = () => {
         </CardContent>
       </Card>
     </div>
-  );
-};
+  )
+}
 
-export default Register; 
+export default Register 
