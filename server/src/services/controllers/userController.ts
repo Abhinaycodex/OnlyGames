@@ -1,12 +1,31 @@
 import { Request, Response } from 'express'
-import jwt from 'jsonwebtoken'
+import jwt, { SignOptions } from 'jsonwebtoken'
 import User, { IUser } from '../../models/User'
+
+// Get JWT configuration from environment variables
+const JWT_SECRET = process.env.JWT_SECRET || 'default-jwt-secret-key-change-in-production'
+const JWT_EXPIRY = process.env.JWT_EXPIRY || '7d'
 
 // Extend the Express Request type to include user property
 interface AuthRequest extends Request {
   user: {
     userId: string;
   };
+}
+
+// Define token payload type
+interface TokenPayload {
+  userId: string;
+  isCreator?: boolean;
+}
+
+// Generate JWT token helper
+const generateToken = (payload: TokenPayload): string => {
+  const options: SignOptions = { 
+    expiresIn: JWT_EXPIRY 
+  };
+  
+  return jwt.sign(payload, JWT_SECRET, options);
 }
 
 export const register = async (req: Request, res: Response) => {
@@ -27,11 +46,7 @@ export const register = async (req: Request, res: Response) => {
 
     await user.save()
 
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    )
+    const token = generateToken({ userId: user._id })
 
     res.status(201).json({
       token,
@@ -76,14 +91,10 @@ export const login = async (req: Request, res: Response) => {
     }
     
     // Generate JWT token
-    const token = jwt.sign(
-      { 
-        userId: user._id,
-        isCreator: user.isCreator
-      },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    )
+    const token = generateToken({ 
+      userId: user._id,
+      isCreator: user.isCreator
+    })
     
     res.json({
       token,
@@ -124,14 +135,10 @@ export const creatorLogin = async (req: Request, res: Response) => {
     }
     
     // Generate JWT token with creator flag
-    const token = jwt.sign(
-      { 
-        userId: user._id,
-        isCreator: true 
-      },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: '7d' }
-    )
+    const token = generateToken({ 
+      userId: user._id,
+      isCreator: true 
+    })
     
     res.json({
       token,

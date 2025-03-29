@@ -50,11 +50,13 @@ const removeUserType = () => localStorage.removeItem(USER_TYPE_KEY);
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 console.log('API URL:', API_URL);
 
+// Create axios instance with proper CORS configuration
 const API = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
+  withCredentials: true, // Important for CORS with credentials
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
 
@@ -64,24 +66,42 @@ API.interceptors.request.use((req: InternalAxiosRequestConfig) => {
   if (token) {
     req.headers.Authorization = `Bearer ${token}`;
   }
-  console.log('Request URL:', req.url);
-  console.log('Request method:', req.method);
+  
+  // Log requests in development
+  if (import.meta.env.DEV) {
+    console.log('Request URL:', req.baseURL + req.url);
+    console.log('Request method:', req.method);
+  }
+  
   return req;
 });
 
-// Handle token expiration
+// Add CORS-specific error handling
 API.interceptors.response.use(
   (response) => {
-    console.log('Response status:', response.status);
+    if (import.meta.env.DEV) {
+      console.log('Response status:', response.status);
+    }
     return response;
   },
   (error) => {
-    console.error('Response error:', error);
+    if (import.meta.env.DEV) {
+      console.error('API Error:', error.message);
+      
+      // Check for CORS errors specifically
+      if (error.message.includes('Network Error')) {
+        console.error('CORS ERROR: This appears to be a CORS issue.');
+        console.error('Check that your server is running and CORS is properly configured.');
+        console.error('Current API URL:', API_URL);
+      }
+    }
+    
     if (error.response?.status === 401) {
       removeToken();
       removeUserType();
       window.location.href = '/login';
     }
+    
     return Promise.reject(error);
   }
 );

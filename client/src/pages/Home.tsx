@@ -1,7 +1,7 @@
-import { dummyGamers, dummyContent } from '../data/dummyData'
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
-import { Button } from '../components/ui/button'
-import { Link } from 'react-router-dom'
+import { dummyGamers, dummyContent } from '../data/dummyData';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Link } from 'react-router-dom';
 
 export default function Home() {
   return (
@@ -30,38 +30,20 @@ export default function Home() {
 
       {/* Features Section */}
       <section className="grid md:grid-cols-3 gap-6">
-        <Card className="slide-in" style={{ animationDelay: '0.2s' }}>
-          <CardHeader>
-            <CardTitle>Connect with Gamers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Find and connect with gamers who share your interests and gaming style.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="slide-in" style={{ animationDelay: '0.4s' }}>
-          <CardHeader>
-            <CardTitle>Share Your Content</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Upload and share your gaming highlights, tutorials, and live streams.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="slide-in" style={{ animationDelay: '0.6s' }}>
-          <CardHeader>
-            <CardTitle>Grow Your Community</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              Build your fanbase and monetize your gaming content through subscriptions.
-            </p>
-          </CardContent>
-        </Card>
+        {[
+          { title: "Connect with Gamers", text: "Find and connect with gamers who share your interests and gaming style.", delay: "0.2s" },
+          { title: "Share Your Content", text: "Upload and share your gaming highlights, tutorials, and live streams.", delay: "0.4s" },
+          { title: "Grow Your Community", text: "Build your fanbase and monetize your gaming content through subscriptions.", delay: "0.6s" },
+        ].map(({ title, text, delay }) => (
+          <Card key={title} className="slide-in" style={{ animationDelay: delay }}>
+            <CardHeader>
+              <CardTitle>{title}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground">{text}</p>
+            </CardContent>
+          </Card>
+        ))}
       </section>
 
       {/* CTA Section */}
@@ -71,9 +53,7 @@ export default function Home() {
           Join thousands of gamers who are already sharing their passion on OnlyGames.
         </p>
         <Link to="/register">
-          <Button size="lg" className="glow">
-            Get Started Now
-          </Button>
+          <Button size="lg" className="glow">Get Started Now</Button>
         </Link>
       </section>
 
@@ -85,11 +65,7 @@ export default function Home() {
             <Card key={gamer.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-4">
-                  <img
-                    src={gamer.avatar}
-                    alt={gamer.name}
-                    className="w-16 h-16 rounded-full"
-                  />
+                  <img src={gamer.avatar} alt={gamer.name} className="w-16 h-16 rounded-full" />
                   <div>
                     <CardTitle className="text-xl">{gamer.name}</CardTitle>
                     <p className="text-sm text-muted-foreground">@{gamer.username}</p>
@@ -100,10 +76,7 @@ export default function Home() {
                 <p className="text-sm text-muted-foreground mb-4">{gamer.bio}</p>
                 <div className="flex flex-wrap gap-2 mb-4">
                   {gamer.games.map((game) => (
-                    <span
-                      key={game}
-                      className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full"
-                    >
+                    <span key={game} className="px-2 py-1 bg-primary/10 text-primary text-xs rounded-full">
                       {game}
                     </span>
                   ))}
@@ -123,24 +96,16 @@ export default function Home() {
         <h2 className="text-2xl font-bold mb-6">Latest Content</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {dummyContent.map((content) => {
-            const creator = dummyGamers.find(g => g.id === content.creatorId)
+            const creator = dummyGamers.find(g => g.id === content.creatorId);
             return (
               <Card key={content.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                <img
-                  src={content.thumbnail}
-                  alt={content.title}
-                  className="w-full h-48 object-cover"
-                />
+                <img src={content.thumbnail} alt={content.title} className="w-full h-48 object-cover" />
                 <CardContent className="p-4">
                   <h3 className="font-semibold mb-2">{content.title}</h3>
                   <p className="text-sm text-muted-foreground mb-4">{content.description}</p>
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
-                      <img
-                        src={creator?.avatar}
-                        alt={creator?.name}
-                        className="w-6 h-6 rounded-full"
-                      />
+                      <img src={creator?.avatar} alt={creator?.name} className="w-6 h-6 rounded-full" />
                       <span>{creator?.name}</span>
                     </div>
                     <div className="flex items-center gap-4">
@@ -150,10 +115,10 @@ export default function Home() {
                   </div>
                 </CardContent>
               </Card>
-            )
+            );
           })}
         </div>
       </section>
     </div>
-  )
-} 
+  );
+}
