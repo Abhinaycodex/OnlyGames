@@ -69,7 +69,7 @@ API.interceptors.request.use((req: InternalAxiosRequestConfig) => {
   
   // Log requests in development
   if (import.meta.env.DEV) {
-    console.log('Request URL:', req.baseURL + req.url);
+    console.log('Request URL:', (req.baseURL || '') + req.url);
     console.log('Request method:', req.method);
   }
   

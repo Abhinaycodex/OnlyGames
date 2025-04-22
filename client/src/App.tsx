@@ -12,6 +12,7 @@ import Login from './pages/Login'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import { Toaster } from './components/Toaster'
+import Avatar from './pages/Avatar'
 
 const queryClient = new QueryClient()
 
@@ -32,6 +33,8 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/avatar" element={<Avatar />} />
+                  <Route path="*" element={<div>404 Not Found</div>} />
                 </Routes>
               </main>
               <Footer />
