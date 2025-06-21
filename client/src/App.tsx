@@ -13,6 +13,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import { Toaster } from './components/Toaster'
 import Avatar from './pages/Avatar'
+import { LogOut } from 'lucide-react'
 
 const queryClient = new QueryClient()
 
@@ -34,7 +35,11 @@ function App() {
                   <Route path="/register" element={<Register />} />
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/avatar" element={<Avatar />} />
+                  <Route path="/creator-dashboard" element={<Dashboard />} />
+                  <Route path="/creator-dashboard/:section" element={<Dashboard />} />
+                  <Route path="/creator-dashboard/:section/:subSection" element={<Dashboard />} />
                   <Route path="*" element={<div>404 Not Found</div>} />
+
                 </Routes>
               </main>
               <Footer />

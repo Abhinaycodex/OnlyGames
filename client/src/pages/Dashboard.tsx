@@ -7,6 +7,7 @@ import { Skeleton } from '../components/ui/skeleton';
 import { getProfile, getUserStats } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../components/ui/use-toast';
+import { LogOut } from 'lucide-react';
 
 interface UserStats {
   subscribers?: number;
@@ -110,8 +111,19 @@ const Dashboard = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <div>
+          <LogOut className="inline-block ml-2 text-primary cursor-pointer"
+              onClick={() => {
+                // Handle logout logic here
+                toast({
+                  title: 'Logged Out',
+                  description: 'You have successfully logged out.',
+                  variant: 'success'
+                });
+              }}
+            />
           <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
             Dashboard
+            
           </h1>
           <p className="text-muted-foreground mt-2">
             {loading ? (

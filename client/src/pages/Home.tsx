@@ -7,21 +7,23 @@ export default function Home() {
   return (
     <div className="space-y-16">
       {/* Hero Section */}
-      <section className="text-center space-y-6 fade-in">
-        <h1 className="text-5xl font-bold tracking-tight">
+      <section className="text-center space-y-5 fade-in">
+        <h1 className="text-6xl font-bold tracking-tight">
           Welcome to <span className="text-primary">OnlyGames</span>
         </h1>
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Connect with gamers, share your passion, and grow your gaming community.
         </p>
         <div className="flex justify-center gap-4">
+
           <Link to="/explore">
             <Button size="lg" className="glow">
               Explore Creators
             </Button>
           </Link>
+
           <Link to="/register">
-            <Button size="lg" variant="outline" className="float">
+            <Button size="lg" variant="outline" className="glow bg-red-500 text-white hover:bg-red-700">
               Become a Creator
             </Button>
           </Link>
@@ -29,13 +31,13 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="grid md:grid-cols-3 gap-6">
+      <section className="grid md:grid-cols-3 gap-5 fade-in">
         {[
           { title: "Connect with Gamers", text: "Find and connect with gamers who share your interests and gaming style.", delay: "0.2s" },
           { title: "Share Your Content", text: "Upload and share your gaming highlights, tutorials, and live streams.", delay: "0.4s" },
           { title: "Grow Your Community", text: "Build your fanbase and monetize your gaming content through subscriptions.", delay: "0.6s" },
         ].map(({ title, text, delay }) => (
-          <Card key={title} className="slide-in" style={{ animationDelay: delay }}>
+          <Card key={title} className="slide-in bg-pink-700" style={{ animationDelay: delay }}>
             <CardHeader>
               <CardTitle>{title}</CardTitle>
             </CardHeader>
@@ -52,6 +54,7 @@ export default function Home() {
         <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
           Join thousands of gamers who are already sharing their passion on OnlyGames.
         </p>
+        <br />
         <Link to="/register">
           <Button size="lg" className="glow">Get Started Now</Button>
         </Link>
@@ -59,7 +62,7 @@ export default function Home() {
 
       {/* Featured Creators */}
       <section>
-        <h2 className="text-2xl font-bold mb-6">Featured Creators</h2>
+        <h2 className="text-2xl font-bold mb-6 ">Featured Creators</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {dummyGamers.map((gamer) => (
             <Card key={gamer.id} className="overflow-hidden hover:shadow-lg transition-shadow">

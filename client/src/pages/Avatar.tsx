@@ -29,6 +29,7 @@ const Avatar = () => {
     setSelectedImageURL(URL.createObjectURL(file));
   };
 
+  
   const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
 
   const handleConvert = async () => {
