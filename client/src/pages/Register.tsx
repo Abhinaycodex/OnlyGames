@@ -1,234 +1,222 @@
-'use client'; // Required for client-side interactivity (useState, useRouter)
+import React, { useState, useCallback } from 'react';
+import { useUser } from '../contexts/UserContext';
+import { LoginForm } from '../components/LoginForm';
+import { RegisterForm } from '../components/RegisterForm';
+import { UserProfile } from '../components/User/UserProfile';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import {
+  Users,
+  Crown,
+  Gamepad2,
+  Play,
+  Trophy,
+  Heart,
+  MessageCircle,
+  Zap,
+} from 'lucide-react';
 
-import { useState } from 'react';
-import { useNavigate , Link} from 'react-router-dom';
-import { toast } from 'react-hot-toast'; // Toast library for notifications
-import { dummyGamers } from '../data/dummyData'; // Adjust path to your data file
-import { GamerProfile } from '../data/dummyData'; // Adjust path to your interfaces
+const Register: React.FC = () => {
+  const { user } = useUser();
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
-export default function Register() {
-  const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    name: '',
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-    bio: '',
-    isCreator: false,
-  });
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { id, value, type, checked } = e.target as HTMLInputElement;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validate passwords
-    if (formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
-      return;
+  const handleAuthModeChange = useCallback(
+  (value: string) => {
+    if (value === 'login' || value === 'register') {
+      setAuthMode(value);
     }
+  },
+  []
+);
 
-    // Validate required fields
-    if (!formData.name || !formData.username || !formData.email || !formData.password) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      // Simulate API call to register user
-      const newUser: GamerProfile = {
-        id: String(dummyGamers.length + 1), // Generate simple ID
-        name: formData.name,
-        username: formData.username,
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.username}`, // Generate avatar
-        bio: formData.bio,
-        followers: 0,
-        rating: 0,
-        isCreator: formData.isCreator,
-        games: [],
-        socialLinks: {},
-      };
-
-      // Simulate adding to dummyGamers (in a real app, this would be an API call)
-      dummyGamers.push(newUser);
-
-      toast.success('Account created successfully');
-      navigate('/dashboard');
-    } catch (error: any) {
-      toast.error(error.message || 'Registration failed');
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (user) {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 p-4">
+        <div className="container mx-auto py-8">
+          <div className="text-center mb-8">
+            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent animate-pulse">
+              Welcome back, {user.username}!
+            </h1>
+            <p className="text-gray-300 text-lg">
+              Ready to game and create amazing content?
+            </p>
+          </div>
+          <UserProfile />
+        </div>
+      </main>
+    );
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-6">
-        <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-blue-500 to-blue-300 bg-clip-text text-transparent">
-          Create a Gamer Account
-        </h1>
-        <form className="space-y-4 mt-4" onSubmit={handleSubmit}>
-          <div className="space-y-2">
-            <label htmlFor="name" className="text-sm font-medium">
-              Full Name
-            </label>
-            <input
-              id="name"
-              value={formData.name}
-              onChange={handleChange}
-              placeholder="John Doe"
-              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="username" className="text-sm font-medium">
-              Username
-            </label>
-            <input
-              id="username"
-              value={formData.username}
-              onChange={handleChange}
-              placeholder="username123"
-              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">
-              Email
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="john@example.com"
-              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="password" 
-            className="text-sm font-medium">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              className="w-full p-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-              placeholder ="Enter your password"
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="confirmPassword" className="text-sm font-medium">
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              type="password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className="w-full p-2 border text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-              placeholder ="Confirm password"
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="bio" className="text-sm font-medium">
-              Bio
-            </label>
-            <textarea
-              id="bio"
-              value={formData.bio}
-              onChange={handleChange}
-              placeholder="Tell us about yourself (optional)"
-              className="w-full p-2 border text-black rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex items-center space-x-2">
-            <input
-              id="isCreator"
-              type="checkbox"
-              checked={formData.isCreator}
-              onChange={handleChange}
-              className="h-4 w-4"
-            />
-            <label htmlFor="isCreator" className="text-sm">
-              I want to become a creator
-            </label>
-          </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 disabled:bg-blue-300"
-          >
-            {loading ? 'Creating Account...' : 'Sign Up'}
-          </button>
-        </form>
-
-        <div className="relative my-6">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-500">Or continue with</span>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <button className="w-full border p-2 rounded-md flex items-center justify-center">
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-              <path
-                d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                fill="#4285F4"
-              />
-              <path
-                d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                fill="#34A853"
-              />
-              <path
-                d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                fill="#FBBC05"
-              />
-              <path
-                d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                fill="#EA4335"
-              />
-            </svg>
-            Google
-          </button>
-          <button className="w-full border p-2 rounded-md flex items-center justify-center">
-            <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-              <path
-                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-                fill="#1877F2"
-              />
-            </svg>
-            Facebook
-          </button>
-        </div>
-
-        <p className="mt-6 text-center text-sm text-gray-500">
-          Already have an account?{' '}
-          <Link href="/login" className="text-blue-500 hover:underline">
-            Sign in
-          </Link>
-        </p>
+    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div
+          className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"
+          style={{ animationDelay: '0ms' }}
+        />
+        <div
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"
+          style={{ animationDelay: '2000ms' }}
+        />
+        <div
+          className="absolute top-40 left-1/2 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"
+          style={{ animationDelay: '4000ms' }}
+        />
       </div>
-    </div>
+
+      <div className="relative z-10 container mx-auto px-4 py-8">
+        {/* Hero Section */}
+        <section className="text-center mb-16">
+          <div className="flex items-center justify-center mb-6">
+            <Gamepad2 className="h-16 w-16 text-purple-400 mr-4 animate-bounce" />
+            <h1 className="text-7xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+              OnlyGames
+            </h1>
+          </div>
+          <p className="text-2xl text-gray-300 mb-8 max-w-3xl mx-auto leading-relaxed">
+            The ultimate platform where gamers meet creators. Play, learn, create, and
+            connect with the gaming community like never before.
+          </p>
+
+          {/* Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            <Card className="bg-slate-800/50 border-purple-500/20 backdrop-blur-sm hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 group">
+              <CardHeader className="text-center pb-2">
+                <div className="mx-auto mb-4 p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-fit group-hover:rotate-12 transition-transform">
+                  <Users className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-white text-xl">Connect</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-400">
+                  Follow your favorite gaming creators and build lasting connections
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800/50 border-yellow-500/20 backdrop-blur-sm hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 group">
+              <CardHeader className="text-center pb-2">
+                <div className="mx-auto mb-4 p-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full w-fit group-hover:rotate-12 transition-transform">
+                  <Crown className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-white text-xl">Create</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-400">
+                  Share your gaming content and monetize your passion
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800/50 border-blue-500/20 backdrop-blur-sm hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 group">
+              <CardHeader className="text-center pb-2">
+                <div className="mx-auto mb-4 p-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full w-fit group-hover:rotate-12 transition-transform">
+                  <Play className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-white text-xl">Play</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-400">
+                  Join gaming sessions and improve your skills
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-slate-800/50 border-green-500/20 backdrop-blur-sm hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 group">
+              <CardHeader className="text-center pb-2">
+                <div className="mx-auto mb-4 p-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full w-fit group-hover:rotate-12 transition-transform">
+                  <Trophy className="h-8 w-8 text-white" />
+                </div>
+                <CardTitle className="text-white text-xl">Learn</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-400">
+                  Master new games with expert creators and coaches
+                </CardDescription>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Stats Section */}
+          <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            <div className="text-center">
+              <div className="text-5xl font-bold text-purple-400 mb-2">10K+</div>
+              <div className="text-gray-400 text-lg">Active Gamers</div>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold text-pink-400 mb-2">500+</div>
+              <div className="text-gray-400 text-lg">Content Creators</div>
+            </div>
+            <div className="text-center">
+              <div className="text-5xl font-bold text-blue-400 mb-2">1M+</div>
+              <div className="text-gray-400 text-lg">Gaming Sessions</div>
+            </div>
+          </section>
+        </section>
+
+        {/* Auth Section */}
+        <section className="max-w-md mx-auto">
+          <Card className="bg-slate-800/80 border-purple-500/30 backdrop-blur-lg shadow-2xl">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl text-white mb-2">Join OnlyGames</CardTitle>
+              <CardDescription className="text-gray-400">
+                Start your gaming journey today
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs value={authMode} onValueChange={handleAuthModeChange}>
+                <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-700/50">
+                  <TabsTrigger
+                    value="login"
+                    className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+                  >
+                    Sign In
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="register"
+                    className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
+                  >
+                    Sign Up
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="login" className="transition-opacity duration-300 ease-in-out data-[state=inactive]:opacity-0">
+                  <LoginForm onSuccess={() => console.log('Login successful')} />
+                </TabsContent>
+
+
+                <TabsContent value="register">
+                  <RegisterForm onSuccess={() => console.log('Registration successful')} />
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Footer */}
+        <footer className="text-center mt-16">
+          <div className="flex items-center justify-center space-x-6 mb-6">
+            <div className="flex items-center space-x-2 text-purple-400">
+              <Heart className="h-5 w-5" />
+              <span>Premium Content</span>
+            </div>
+            <div className="flex items-center space-x-2 text-pink-400">
+              <MessageCircle className="h-5 w-5" />
+              <span>Live Chat</span>
+            </div>
+            <div className="flex items-center space-x-2 text-blue-400">
+              <Zap className="h-5 w-5" />
+              <span>Instant Gaming</span>
+            </div>
+          </div>
+          <p className="text-gray-500">
+            Join thousands of gamers and creators in our community
+          </p>
+        </footer>
+      </div>
+    </main>
   );
-}
+};
+
+export default Register;

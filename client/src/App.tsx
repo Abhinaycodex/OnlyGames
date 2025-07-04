@@ -13,7 +13,6 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import { Toaster } from './components/Toaster'
 import Avatar from './pages/Avatar'
-import { LogOut } from 'lucide-react'
 
 const queryClient = new QueryClient()
 
