@@ -3,6 +3,7 @@ import { useUser } from '../contexts/UserContext';
 import { LoginForm } from '../components/LoginForm';
 import { RegisterForm } from '../components/RegisterForm';
 import { UserProfile } from '../components/User/UserProfile';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import {
@@ -20,14 +21,11 @@ const Register: React.FC = () => {
   const { user } = useUser();
   const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
 
-  const handleAuthModeChange = useCallback(
-  (value: string) => {
+  const handleAuthModeChange = useCallback((value: string) => {
     if (value === 'login' || value === 'register') {
       setAuthMode(value);
     }
-  },
-  []
-);
+  }, []);
 
   if (user) {
     return (
@@ -49,24 +47,16 @@ const Register: React.FC = () => {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div
-          className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"
-          style={{ animationDelay: '0ms' }}
-        />
-        <div
-          className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"
-          style={{ animationDelay: '2000ms' }}
-        />
-        <div
-          className="absolute top-40 left-1/2 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"
-          style={{ animationDelay: '4000ms' }}
-        />
+      {/* Blurred Background Orbs */}
+      <div className="absolute inset-0 overflow-hidden z-0">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" />
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" />
+        <div className="absolute top-40 left-1/2 w-80 h-80 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse" />
       </div>
 
+      {/* Main Content */}
       <div className="relative z-10 container mx-auto px-4 py-8">
-        {/* Hero Section */}
+        {/* Hero */}
         <section className="text-center mb-16">
           <div className="flex items-center justify-center mb-6">
             <Gamepad2 className="h-16 w-16 text-purple-400 mr-4 animate-bounce" />
@@ -81,81 +71,45 @@ const Register: React.FC = () => {
 
           {/* Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-            <Card className="bg-slate-800/50 border-purple-500/20 backdrop-blur-sm hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 group">
-              <CardHeader className="text-center pb-2">
-                <div className="mx-auto mb-4 p-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-fit group-hover:rotate-12 transition-transform">
-                  <Users className="h-8 w-8 text-white" />
-                </div>
-                <CardTitle className="text-white text-xl">Connect</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-gray-400">
-                  Follow your favorite gaming creators and build lasting connections
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800/50 border-yellow-500/20 backdrop-blur-sm hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 group">
-              <CardHeader className="text-center pb-2">
-                <div className="mx-auto mb-4 p-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full w-fit group-hover:rotate-12 transition-transform">
-                  <Crown className="h-8 w-8 text-white" />
-                </div>
-                <CardTitle className="text-white text-xl">Create</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-gray-400">
-                  Share your gaming content and monetize your passion
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800/50 border-blue-500/20 backdrop-blur-sm hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 group">
-              <CardHeader className="text-center pb-2">
-                <div className="mx-auto mb-4 p-3 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full w-fit group-hover:rotate-12 transition-transform">
-                  <Play className="h-8 w-8 text-white" />
-                </div>
-                <CardTitle className="text-white text-xl">Play</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-gray-400">
-                  Join gaming sessions and improve your skills
-                </CardDescription>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-slate-800/50 border-green-500/20 backdrop-blur-sm hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 group">
-              <CardHeader className="text-center pb-2">
-                <div className="mx-auto mb-4 p-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full w-fit group-hover:rotate-12 transition-transform">
-                  <Trophy className="h-8 w-8 text-white" />
-                </div>
-                <CardTitle className="text-white text-xl">Learn</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-gray-400">
-                  Master new games with expert creators and coaches
-                </CardDescription>
-              </CardContent>
-            </Card>
+            {[
+              { title: 'Connect', icon: Users, color: 'from-purple-500 to-pink-500', desc: 'Follow your favorite gaming creators and build lasting connections' },
+              { title: 'Create', icon: Crown, color: 'from-yellow-500 to-orange-500', desc: 'Share your gaming content and monetize your passion' },
+              { title: 'Play', icon: Play, color: 'from-blue-500 to-cyan-500', desc: 'Join gaming sessions and improve your skills' },
+              { title: 'Learn', icon: Trophy, color: 'from-green-500 to-emerald-500', desc: 'Master new games with expert creators and coaches' },
+            ].map(({ title, icon: Icon, color, desc }, idx) => (
+              <Card
+                key={idx}
+                className="bg-slate-800/50 border border-purple-500/10 backdrop-blur-sm hover:bg-slate-800/70 transition-all duration-300 hover:scale-105 group"
+              >
+                <CardHeader className="text-center pb-2">
+                  <div className={`mx-auto mb-4 p-3 bg-gradient-to-r ${color} rounded-full w-fit group-hover:rotate-12 transition-transform`}>
+                    <Icon className="h-8 w-8 text-white" />
+                  </div>
+                  <CardTitle className="text-white text-xl">{title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-gray-400">{desc}</CardDescription>
+                </CardContent>
+              </Card>
+            ))}
           </div>
 
-          {/* Stats Section */}
-          <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            <div className="text-center">
-              <div className="text-5xl font-bold text-purple-400 mb-2">10K+</div>
-              <div className="text-gray-400 text-lg">Active Gamers</div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-pink-400 mb-2">500+</div>
-              <div className="text-gray-400 text-lg">Content Creators</div>
-            </div>
-            <div className="text-center">
-              <div className="text-5xl font-bold text-blue-400 mb-2">1M+</div>
-              <div className="text-gray-400 text-lg">Gaming Sessions</div>
-            </div>
-          </section>
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            {[
+              { value: '10K+', label: 'Active Gamers', color: 'text-purple-400' },
+              { value: '500+', label: 'Content Creators', color: 'text-pink-400' },
+              { value: '1M+', label: 'Gaming Sessions', color: 'text-blue-400' },
+            ].map(({ value, label, color }, i) => (
+              <div key={i} className="text-center">
+                <div className={`text-5xl font-bold mb-2 ${color}`}>{value}</div>
+                <div className="text-gray-400 text-lg">{label}</div>
+              </div>
+            ))}
+          </div>
         </section>
 
-        {/* Auth Section */}
+        {/* Auth Tabs */}
         <section className="max-w-md mx-auto">
           <Card className="bg-slate-800/80 border-purple-500/30 backdrop-blur-lg shadow-2xl">
             <CardHeader className="text-center">
@@ -181,10 +135,9 @@ const Register: React.FC = () => {
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="login" className="transition-opacity duration-300 ease-in-out data-[state=inactive]:opacity-0">
+                <TabsContent value="login">
                   <LoginForm onSuccess={() => console.log('Login successful')} />
                 </TabsContent>
-
 
                 <TabsContent value="register">
                   <RegisterForm onSuccess={() => console.log('Registration successful')} />

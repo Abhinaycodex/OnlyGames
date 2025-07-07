@@ -1,42 +1,32 @@
-
-export interface IUser {
-  id: string;
-  username: string;
+// ✅ Login input
+export interface LoginData {
   email: string;
-  isCreator: boolean;
-  profilePicture: string;
-  bio: string;
-  games: string[];
-  subscriptionPrice: number;
-  subscribers: string[];
-  createdAt: Date;
-  creatorProfile?: {
-    contentCount: number;
-    totalRevenue: number;
-    subscriberCount: number;
-    contentCategories: string[];
-    featured: boolean;
-    verificationStatus: 'pending' | 'verified' | 'rejected';
-  };
+  password: string;
 }
 
-export interface CreateUserData {
+// ✅ Register input
+export interface RegisterData {
   username: string;
   email: string;
   password: string;
   isCreator?: boolean;
 }
 
-export interface LoginData {
+// ✅ Minimal User type based on backend — extend if needed
+export interface User {
+  id: string;
+  username: string;
   email: string;
-  password: string;
+  isCreator?: boolean;
+  [key: string]: any; // allows flexibility for future fields like profilePicture, bio, etc.
 }
 
+// ✅ Context type
 export interface UserContextType {
-  user: IUser | null;
-  login: (data: LoginData) => Promise<boolean>;
-  register: (data: CreateUserData) => Promise<boolean>;
-  logout: () => void;
-  updateProfile: (updates: Partial<IUser>) => Promise<boolean>;
+  user: User | null;
   isLoading: boolean;
+  login: (data: LoginData) => Promise<boolean>;
+  register: (data: RegisterData) => Promise<boolean>;
+  logout: () => void;
+  updateProfile: (updates: Partial<User>) => Promise<boolean>;
 }
