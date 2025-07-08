@@ -34,7 +34,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-app.use('/api/users', userRoutes)
+app.use('/api/auth', userRoutes)
 
 // Error handling
 app.use('*', (req, res) => {

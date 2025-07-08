@@ -134,7 +134,7 @@ export const register = async (userData: RegisterData): Promise<LoginResponse> =
 
     // Try the request with proper error handling
     try {
-      const response = await API.post<LoginResponse>('/users/register', userData);
+      const response = await API.post<LoginResponse>('/auth/register', userData);
       console.log('Registration successful. Response:', response);
       
       const { token, user } = response.data;
@@ -182,7 +182,7 @@ export const register = async (userData: RegisterData): Promise<LoginResponse> =
 export const userLogin = async (email: string, password: string): Promise<LoginResponse> => {
   try {
     validateLoginInput(email, password);
-    const response = await API.post<LoginResponse>('/users/login', { email, password, type: 'user' });
+    const response = await API.post<LoginResponse>('/auth/login', { email, password, type: 'user' });
     handleLoginResponse(response.data);
     return response.data;
   } catch (error) {
@@ -195,7 +195,7 @@ export const userLogin = async (email: string, password: string): Promise<LoginR
 export const creatorLogin = async (email: string, password: string): Promise<LoginResponse> => {
   try {
     validateLoginInput(email, password);
-    const response = await API.post<LoginResponse>('/users/creator-login', { email, password, type: 'creator' });
+    const response = await API.post<LoginResponse>('/auth/creator-login', { email, password, type: 'creator' });
     handleLoginResponse(response.data);
     return response.data;
   } catch (error) {
@@ -208,7 +208,7 @@ export const creatorLogin = async (email: string, password: string): Promise<Log
 export const login = async (email: string, password: string): Promise<LoginResponse> => {
   try {
     validateLoginInput(email, password);
-    const response = await API.post<LoginResponse>('/users/login', { email, password });
+    const response = await API.post<LoginResponse>('/auth/login', { email, password });
     
     // Store token and set user type
     const { token, user } = response.data;
@@ -278,7 +278,7 @@ export const isCreator = (): boolean => {
 export const getProfile = async (): Promise<any> => {
   try {
     console.log('Fetching user profile');
-    const response = await API.get('/users/profile');
+    const response = await API.get('/auth/profile');
     console.log('Profile data:', response.data);
     return response.data;
   } catch (error: unknown) {
@@ -302,7 +302,7 @@ export const getUserStats = async (): Promise<any> => {
   try {
     console.log('Fetching user stats');
     // Different endpoints based on user type
-    const endpoint = isCreator() ? '/users/creator-stats' : '/users/stats';
+    const endpoint = isCreator() ? '/auth/creator-stats' : '/auth/stats';
     const response = await API.get(endpoint);
     console.log('Stats data:', response.data);
     return response.data;

@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useUser } from '../contexts/UserContext';
-import { LoginForm } from '../components/LoginForm';
 import { RegisterForm } from '../components/RegisterForm';
 import { UserProfile } from '../components/User/UserProfile';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/ui/use-toast';
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import {
   Users,
@@ -17,15 +17,107 @@ import {
   Zap,
 } from 'lucide-react';
 
-const Register: React.FC = () => {
-  const { user } = useUser();
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
+// API function for user registration
+const userRegister = async (userData: {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}) => {
+  const response = await fetch('http://localhost:5000/api/auth/register', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(userData),
+  });
 
-  const handleAuthModeChange = useCallback((value: string) => {
-    if (value === 'login' || value === 'register') {
-      setAuthMode(value);
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Registration failed');
+  }
+
+  const data = await response.json();
+  
+  // Store token in localStorage
+  if (data.token) {
+    localStorage.setItem('authToken', data.token);
+  }
+  
+  return data;
+};
+
+interface FormData {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+const Register: React.FC = () => {
+  const { user, setUser } = useUser();
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleRegisterSubmit = async (formData: FormData) => {
+    try {
+      setLoading(true);
+      console.log('Attempting registration with email:', formData.email);
+      
+      // Validate passwords match
+      if (formData.password !== formData.confirmPassword) {
+        throw new Error('Passwords do not match');
+      }
+      
+      const response = await userRegister({
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword
+      });
+      
+      toast({
+        title: "Registration Success",
+        description: "Welcome to OnlyGames!"
+      });
+      
+      // Set user in context
+      setUser(response.user);
+
+      console.log("Registration response:", response);
+      
+      // Navigate to dashboard
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error("Registration error:", error);
+      
+      let errorMessage = "Registration failed";
+      
+      if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      
+      // Check if it's a CORS error
+      if (error.name === 'NetworkError' || 
+          (typeof error.message === 'string' && 
+           (error.message.includes('Network Error') || 
+            error.message.includes('CORS')))) {
+        errorMessage = "Network error - the server may be down or CORS is not enabled";
+        console.error("CORS or network error detected");
+      }
+      
+      toast({
+        title: "Registration Failed",
+        description: errorMessage,
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  };
+
+
 
   if (user) {
     return (
@@ -109,40 +201,20 @@ const Register: React.FC = () => {
           </div>
         </section>
 
-        {/* Auth Tabs */}
+        {/* Registration Form */}
         <section className="max-w-md mx-auto">
           <Card className="bg-slate-800/80 border-purple-500/30 backdrop-blur-lg shadow-2xl">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl text-white mb-2">Join OnlyGames</CardTitle>
               <CardDescription className="text-gray-400">
-                Start your gaming journey today
+                Create your account and start your gaming journey
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Tabs value={authMode} onValueChange={handleAuthModeChange}>
-                <TabsList className="grid w-full grid-cols-2 mb-6 bg-slate-700/50">
-                  <TabsTrigger
-                    value="login"
-                    className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
-                  >
-                    Sign In
-                  </TabsTrigger>
-                  <TabsTrigger
-                    value="register"
-                    className="data-[state=active]:bg-purple-600 data-[state=active]:text-white"
-                  >
-                    Sign Up
-                  </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="login">
-                  <LoginForm onSuccess={() => console.log('Login successful')} />
-                </TabsContent>
-
-                <TabsContent value="register">
-                  <RegisterForm onSuccess={() => console.log('Registration successful')} />
-                </TabsContent>
-              </Tabs>
+              <RegisterForm 
+                onSubmit={handleRegisterSubmit}
+                loading={loading}
+              />
             </CardContent>
           </Card>
         </section>

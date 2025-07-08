@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
@@ -11,7 +10,7 @@ const Profile = () => {
         <CardHeader className="flex flex-row items-center gap-4">
           <div className="relative">
             <img
-              src="https://via.placeholder.com/150"
+              src="https://api.dicebear.com/9.x/pixel-art/svg?seed=lillyput"
               alt="Profile"
               className="w-32 h-32 rounded-full border-4 border-primary shadow-lg"
             />
@@ -19,8 +18,8 @@ const Profile = () => {
               Pro
             </Badge>
           </div>
-          <div>
-            <CardTitle className="text-3xl font-bold">John Doe</CardTitle>
+          <div> 
+            <CardTitle className="text-3xl font-bold">john doe</CardTitle>
             <p className="text-muted-foreground">@johndoe</p>
             <p className="mt-2 text-sm">
               Professional gamer and content creator. Specializing in FPS games and strategy.
@@ -57,7 +56,7 @@ const Profile = () => {
               <Card key={item} className="overflow-hidden group">
                 <div className="relative aspect-video">
                   <img
-                    src={`https://via.placeholder.com/400x225`}
+                    src={`https://api.dicebear.com/9.x/pixel-art/svg?seed=lillyput`}
                     alt={`Video ${item}`}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />
@@ -83,7 +82,7 @@ const Profile = () => {
               <Card key={item} className="overflow-hidden group">
                 <div className="relative aspect-square">
                   <img
-                    src={`https://via.placeholder.com/400`}
+                    src={`https://api.dicebear.com/9.x/pixel-art/svg?seed=lillyput`}
                     alt={`Photo ${item}`}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />

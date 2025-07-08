@@ -40,9 +40,6 @@ interface AuthContextType {
   user: GamerProfile | User | null;
   loading: boolean;
   isInitialized: boolean;
-  login: (data: LoginData) => Promise<AuthResponse>;
-  register: (data: RegisterData) => Promise<AuthResponse>;
-  socialLogin: (provider: 'google' | 'facebook') => Promise<AuthResponse>;
   logout: () => void;
   isAuthenticated: boolean;
   setUser: (user: User | GamerProfile) => void;
@@ -162,148 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth();
   }, []);
 
-  const login = async (data: LoginData): Promise<AuthResponse> => {
-    setLoading(true);
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: result.message || 'Login failed. Please check your credentials.',
-        };
-      }
-
-      if (result.token) {
-        setToken(result.token);
-      }
-      
-      setUser(result.user);
-      localStorage.setItem('user', JSON.stringify(result.user));
-
-      return { success: true, user: result.user };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Network error occurred';
-      console.error('Login error:', errorMessage);
-      return {
-        success: false,
-        error: 'Unable to connect to server. Please try again.',
-      };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const register = async (data: RegisterData): Promise<AuthResponse> => {
-    setLoading(true);
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        return {
-          success: false,
-          error: result.message || 'Registration failed. Please try again.',
-        };
-      }
-
-      if (result.token) {
-        setToken(result.token);
-      }
-      
-      setUser(result.user);
-      localStorage.setItem('user', JSON.stringify(result.user));
-
-      return { success: true, user: result.user };
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Network error occurred';
-      console.error('Registration error:', errorMessage);
-      return {
-        success: false,
-        error: 'Unable to connect to server. Please try again.',
-      };
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const socialLogin = async (provider: 'google' | 'facebook'): Promise<AuthResponse> => {
-    setLoading(true);
-    try {
-      // For production, this would redirect to OAuth provider
-      // For now, using dummy data for development
-      const isDevelopment = process.env.NODE_ENV === 'development';
-      
-      if (isDevelopment) {
-        // Simulate OAuth login with dummy data
-        const dummyUser: User = {
-          id: `${provider}_${Date.now()}`,
-          name: provider === 'google' ? 'John Doe' : 'Jane Smith',
-          username: provider === 'google' ? 'johndoe' : 'janesmith',
-          email: provider === 'google' ? 'john@gmail.com' : 'jane@facebook.com',
-          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${provider}`,
-          bio: 'Gaming Enthusiast | Content Creator',
-          followers: 0,
-          rating: 0,
-          isCreator: false,
-          games: [],
-          socialLinks: {}
-        };
-        
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        setUser(dummyUser);
-        localStorage.setItem('user', JSON.stringify(dummyUser));
-        
-        return { success: true, user: dummyUser };
-      } else {
-        // Production OAuth flow
-        const response = await fetch(`/api/auth/${provider}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          return {
-            success: false,
-            error: result.message || `${provider} login failed`,
-          };
-        }
-
-        if (result.token) {
-          setToken(result.token);
-        }
-        
-        setUser(result.user);
-        localStorage.setItem('user', JSON.stringify(result.user));
-
-        return { success: true, user: result.user };
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Network error occurred';
-      console.error(`${provider} login error:`, errorMessage);
-      return {
-        success: false,
-        error: `Unable to login with ${provider}. Please try again.`,
-      };
-    } finally {
-      setLoading(false);
-    }
-  };
+  
 
   const updateProfile = async (updates: Partial<User>): Promise<AuthResponse> => {
     if (!user) {
@@ -312,7 +168,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     setLoading(true);
     try {
-      const response = await makeAuthenticatedRequest(`/api/users/${user.id}`, {
+      const response = await makeAuthenticatedRequest(`/api/auth/${user.id}`, {
         method: 'PUT',
         body: JSON.stringify(updates),
       });
@@ -407,9 +263,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     user,
     loading,
     isInitialized,
-    login,
-    register,
-    socialLogin,
     logout,
     isAuthenticated: !!user,
     setUser,

@@ -21,6 +21,9 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    
+
     
     if (!username || !email || !password) {
       toast.error('Please fill in all fields');

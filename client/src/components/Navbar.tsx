@@ -31,7 +31,7 @@ export default function Navbar() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <img
-                      src={user.avatar || 'https://via.placeholder.com/150'}
+                      src={user.avatar || 'https://api.dicebear.com/9.x/pixel-art/svg?seed=lillyput'}
                       alt={user.name}
                       className="h-8 w-8 rounded-full"
                     />

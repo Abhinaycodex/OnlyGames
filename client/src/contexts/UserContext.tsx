@@ -182,7 +182,7 @@
     const register = async (data: RegisterData): Promise<AuthResponse> => {
       setIsLoading(true);
       try {
-        const response = await fetch('/api/auth/register', {
+        const response = await fetch('http://localhost:5000/api/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
@@ -250,7 +250,7 @@
 
       setIsLoading(true);
       try {
-        const response = await makeAuthenticatedRequest(`/api/users/${user.id}`, {
+        const response = await makeAuthenticatedRequest(`/api/auth/${user.id}`, {
           method: 'PUT',
           body: JSON.stringify(updates),
         });
