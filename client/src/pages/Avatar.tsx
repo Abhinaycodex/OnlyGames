@@ -20,6 +20,7 @@ const Avatar = () => {
   const [cartoonImage, setCartoonImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [description, setDescription] = useState<string | null>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -28,6 +29,7 @@ const Avatar = () => {
     setSelectedFile(file);
     setSelectedImageURL(URL.createObjectURL(file));
     setCartoonImage(null); // Reset cartoon image when new file is selected
+    setDescription(null);
     setError(null); // Reset error
   };
 
@@ -35,12 +37,13 @@ const Avatar = () => {
     if (!selectedFile) return;
     setLoading(true);
     setError(null);
+    setDescription(null);
 
     try {
       const base64 = await fileToBase64(selectedFile);
       const mimeType = selectedFile.type;
       
-      // Correct Gemini API endpoint and request format
+      // Use Gemini 2.0 Flash with native image generation
       const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent", {
         method: "POST",
         headers: {
@@ -52,7 +55,7 @@ const Avatar = () => {
             {
               parts: [
                 {
-                  text: "convert into black and white cartoon style",
+                  text: "Generate character of a person whose facial features closely match those of [CHARACTER NAME]. Maintain the character’s unique art style, color palette, and exaggerated expressions, while blending the person’s realistic features naturally into the character blending . Make the image as if the person could belong in the same animated universe as the character",
                 },
                 {
                   inline_data: {
@@ -64,14 +67,15 @@ const Avatar = () => {
             }
           ],
           generationConfig: {
-            temperature: 0.7,
-            topK: 32,
-            topP: 1,
-            maxOutputTokens: 4096,
+            temperature: 0.8,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 8192,
+            responseModalities: ["TEXT", "IMAGE"]
           }
         })
       });
-
+ 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
@@ -81,38 +85,34 @@ const Avatar = () => {
       console.log("Gemini response:", data);
 
       if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-        const textResponse = data.candidates[0].content.parts[0].text;
-        console.log("Generated description:", textResponse);
+        const parts = data.candidates[0].content.parts;
         
-        // Since Gemini can't actually generate images, we'll create a placeholder
-        // In a real implementation, you'd need an image generation service
-        const placeholderDataUrl = `data:image/svg+xml,${encodeURIComponent(`
-          <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:#ff6b6b;stop-opacity:1" />
-                <stop offset="50%" style="stop-color:#4ecdc4;stop-opacity:1" />
-                <stop offset="100%" style="stop-color:#45b7d1;stop-opacity:1" />
-              </linearGradient>
-            </defs>
-            <rect width="512" height="512" fill="url(#bg)"/>
-            <circle cx="256" cy="200" r="80" fill="#fff" opacity="0.9"/>
-            <circle cx="230" cy="180" r="12" fill="#333"/>
-            <circle cx="282" cy="180" r="12" fill="#333"/>
-            <path d="M 220 220 Q 256 250 292 220" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>
-            <text x="256" y="350" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#fff" text-anchor="middle">
-              Cartoon Generated!
-            </text>
-            <text x="256" y="380" font-family="Arial, sans-serif" font-size="14" fill="#fff" text-anchor="middle" opacity="0.8">
-              (Placeholder - see description below)
-            </text>
-          </svg>
-        `)}`;
+        let textResponse = null;
+        let imageData = null;
 
-        setCartoonImage(placeholderDataUrl);
-        
-        // Show the description in a more user-friendly way
-        setError(`✨ Cartoon Description: ${textResponse}`);
+        // Process all parts to find text and image
+        for (const part of parts) {
+          if (part.text) {
+            textResponse = part.text;
+          } else if (part.inlineData) {
+            imageData = part.inlineData.data;
+          }
+        }
+
+        // Set description if we have textResponse
+        if (textResponse) {
+          setDescription(textResponse);
+        }
+
+        // Set cartoon image if we have image data
+        if (imageData) {
+          const imageUrl = `data:image/png;base64,${imageData}`;
+          setCartoonImage(imageUrl);
+        } else {
+          // Fallback if no image is generated
+          throw new Error("No image was generated. The model may not support image generation for this request.");
+        }
+
       } else {
         throw new Error("No valid response from Gemini API");
       }
@@ -124,19 +124,32 @@ const Avatar = () => {
     }
   };
 
+  const handleDownload = () => {
+    if (!cartoonImage) return;
+    
+    const link = document.createElement('a');
+    link.href = cartoonImage;
+    link.download = `cartoon-${selectedFile?.name?.replace(/\.[^/.]+$/, "") || 'image'}.png`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-6xl mx-auto">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">🎨 Avatar Cartoonify</h1>
-        <p className="text-gray-600">Upload an image to get a cartoon description and preview!</p>
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+          🎨 AI Avatar Cartoonify
+        </h1>
+        <p className="text-gray-600 text-lg">Transform your photos into stunning cartoon art with AI!</p>
         <p className="text-sm text-gray-500 mt-2">
-          Note: This demo uses Gemini to describe how your image would look as a cartoon
+          Powered by Gemini 2.0 Flash with native image generation
         </p>
       </div>
 
-      <div className="bg-white rounded-xl shadow-lg p-6">
+      <div className="bg-white rounded-2xl shadow-xl p-8">
         {/* Upload Section */}
-        <div className="flex flex-col items-center gap-6 mb-6">
+        <div className="flex flex-col items-center gap-6 mb-8">
           <div className="flex items-center gap-4">
             <input
               type="file"
@@ -148,43 +161,49 @@ const Avatar = () => {
             />
             <label
               htmlFor="avatar-upload"
-              className={`cursor-pointer px-6 py-3 rounded-lg font-medium transition-all transform hover:scale-105
+              className={`cursor-pointer px-8 py-4 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg
                 ${loading 
                   ? 'bg-gray-400 cursor-not-allowed' 
-                  : 'bg-blue-500 hover:bg-blue-600 shadow-md hover:shadow-lg'
-                } text-white`}
+                  : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
+                } text-white text-lg`}
             >
-              📁 Choose Image
+              📁 Choose Your Photo
             </label>
 
             {selectedFile && !cartoonImage && (
               <button
                 onClick={handleConvert}
                 disabled={loading}
-                className={`px-6 py-3 rounded-lg font-medium transition-all transform hover:scale-105
+                className={`px-8 py-4 rounded-xl font-semibold transition-all transform hover:scale-105 shadow-lg text-lg
                   ${loading 
                     ? 'bg-gray-400 cursor-not-allowed' 
-                    : 'bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg'
+                    : 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700'
                   } text-white`}
               >
-                {loading ? '⏳ Processing...' : '🎨 Cartoonify!'}
+                {loading ? '⏳ Creating Magic...' : '🎨 Cartoonify!'}
               </button>
             )}
           </div>
+
+          {selectedFile && (
+            <p className="text-gray-600 text-sm">
+              Selected: <span className="font-medium">{selectedFile.name}</span>
+            </p>
+          )}
         </div>
 
         {/* Image Display Section */}
         {selectedImageURL && (
-          <div className="bg-gray-50 rounded-lg p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
               {/* Original Image */}
               <div className="text-center">
-                <h3 className="text-lg font-semibold text-gray-700 mb-4">📷 Original</h3>
-                <div className="relative mx-auto" style={{ maxWidth: '300px' }}>
+                <h3 className="text-xl font-bold text-gray-700 mb-6">📷 Original Photo</h3>
+                <div className="relative mx-auto" style={{ maxWidth: '400px' }}>
                   <img
                     src={selectedImageURL}
                     alt="Original"
-                    className="w-full h-auto rounded-lg shadow-md border-4 border-blue-200"
+                    className="w-full h-auto rounded-xl shadow-lg border-4 border-blue-200 transition-transform hover:scale-105"
                   />
                 </div>
               </div>
@@ -192,23 +211,36 @@ const Avatar = () => {
               {/* Cartoon Preview */}
               {(loading || cartoonImage) && (
                 <div className="text-center">
-                  <h3 className="text-lg font-semibold text-gray-700 mb-4">
-                    {loading ? '⏳ Creating Cartoon...' : '🎨 Cartoon Preview'}
+                  <h3 className="text-xl font-bold text-gray-700 mb-6">
+                    {loading ? '⏳ AI is Working...' : '🎨 Cartoon Result'}
                   </h3>
-                  <div className="relative mx-auto" style={{ maxWidth: '300px' }}>
+                  <div className="relative mx-auto" style={{ maxWidth: '400px' }}>
                     {loading ? (
-                      <div className="w-full h-64 bg-gradient-to-br from-blue-100 to-purple-100 rounded-lg flex items-center justify-center">
+                      <div className="w-full h-80 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
                         <div className="text-center">
-                          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4" />
-                          <p className="text-gray-600">Processing with AI...</p>
+                          <div className="relative">
+                            <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-500 border-t-transparent mx-auto mb-4" />
+                            <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-4 border-purple-300 opacity-20" />
+                          </div>
+                          <p className="text-gray-700 font-medium">Generating cartoon magic...</p>
+                          <p className="text-gray-500 text-sm mt-1">This may take a few moments</p>
                         </div>
                       </div>
                     ) : (
-                      <img
-                        src={cartoonImage!}
-                        alt="Cartoon Preview"
-                        className="w-full h-auto rounded-lg shadow-md border-4 border-green-200"
-                      />
+                      <div className="relative">
+                        <img
+                          src={cartoonImage!}
+                          alt="Cartoon Result"
+                          className="w-full h-auto rounded-xl shadow-lg border-4 border-green-200 transition-transform hover:scale-105"
+                        />
+                        <button
+                          onClick={handleDownload}
+                          className="absolute top-4 right-4 bg-green-500 hover:bg-green-600 text-white p-2 rounded-full shadow-lg transition-all transform hover:scale-110"
+                          title="Download cartoon image"
+                        >
+                          📥
+                        </button>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -217,47 +249,81 @@ const Avatar = () => {
           </div>
         )}
 
-        {/* Error/Description Display */}
-        {error && (
-          <div className={`mt-4 p-4 rounded-lg ${
-            error.startsWith('✨') 
-              ? 'bg-green-50 border border-green-200 text-green-800' 
-              : 'bg-red-50 border border-red-200 text-red-800'
-          }`}>
-            <div className="font-medium mb-2">
-              {error.startsWith('✨') ? '🎨 AI Description:' : '❌ Error:'}
+        {/* Description Display */}
+        {description && (
+          <div className="mt-6 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
+            <div className="font-semibold text-green-800 mb-3 flex items-center">
+              <span className="text-2xl mr-2">🤖</span>
+              AI Description:
             </div>
-            <p className="text-sm leading-relaxed">{error.replace('✨ Cartoon Description: ', '')}</p>
+            <p className="text-gray-700 leading-relaxed">{description}</p>
           </div>
         )}
 
-        {/* Reset Button */}
+        {/* Error Display */}
+        {error && (
+          <div className="mt-6 p-6 bg-red-50 rounded-xl border border-red-200">
+            <div className="font-semibold text-red-800 mb-3 flex items-center">
+              <span className="text-2xl mr-2">❌</span>
+              Error:
+            </div>
+            <p className="text-red-700 leading-relaxed">{error}</p>
+          </div>
+        )}
+
+        {/* Action Buttons */}
         {(selectedFile || cartoonImage) && (
-          <div className="text-center mt-6">
+          <div className="text-center mt-8 space-x-4">
             <button
               onClick={() => {
                 setSelectedFile(null);
                 setSelectedImageURL(null);
                 setCartoonImage(null);
+                setDescription(null);
                 setError(null);
               }}
-              className="px-4 py-2 text-blue-600 hover:text-blue-800 font-medium transition-colors"
+              className="px-6 py-3 text-blue-600 hover:text-blue-800 font-semibold transition-colors rounded-lg hover:bg-blue-50"
             >
               🔄 Start Over
             </button>
+            
+            {cartoonImage && (
+              <button
+                onClick={handleDownload}
+                className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-all transform hover:scale-105 shadow-md"
+              >
+                📥 Download Cartoon
+              </button>
+            )}
           </div>
         )}
       </div>
 
       {/* Info Section */}
-      <div className="mt-8 bg-blue-50 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-800 mb-2">💡 How it works:</h3>
-        <ul className="text-sm text-blue-700 space-y-1">
-          <li>• Upload any image (PNG, JPG, etc.)</li>
-          <li>• AI analyzes your image and describes how it would look as a cartoon</li>
-          <li>• Get a preview placeholder with the detailed description</li>
-          <li>• For actual image generation, you'd need a service like DALL-E, Midjourney, or Stable Diffusion</li>
-        </ul>
+      <div className="mt-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6">
+        <h3 className="font-bold text-blue-800 mb-4 text-lg">✨ Features:</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-700">
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <span className="text-lg mr-2">🎨</span>
+              <span>Real AI-generated cartoon images</span>
+            </div>
+            <div className="flex items-center">
+              <span className="text-lg mr-2">⚡</span>
+              <span>Powered by Gemini 2.0 Flash</span>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <span className="text-lg mr-2">📥</span>
+              <span>Download high-quality results</span>
+            </div>
+            <div className="flex items-center">
+              <span className="text-lg mr-2">🔄</span>
+              <span>Support for all image formats</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

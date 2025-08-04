@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
+import { ClerkProvider } from "@clerk/clerk-react";
 
 const fileToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -186,5 +187,11 @@ const handleConvert = async (file: File | null) => {
     </div>
   );
 };
+
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+<ClerkProvider publishableKey={clerkPubKey}>
+  <Avatar />
+</ClerkProvider>
 
 export default Avatar;
